@@ -5,7 +5,7 @@ var app = request.agent('http://localhost:8001/api/v1/proxy/namespaces/default/s
 
 describe('API Gateway Tests:', function testGateway() {
    
-    describe('Browse integration test blah', function testBrowse() {
+    describe('Browse integration test blah yes', function testBrowse() {
         it('Should be able to get the list of stickers', function browse(done) {
             app.get('/browse/api/items')
             .set('Accept', 'application/json')
