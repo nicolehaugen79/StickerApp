@@ -1,11 +1,9 @@
 require('should');
 require('supertest-as-promised');
 var request = require('supertest');
-var testAppURL = process.env.TESTAPPURL;
-//var app = request.agent('http://localhost:8001/api/v1/proxy/namespaces/default/services/rousing-alpaca-apigateway:80');
-var app = request.agent(testAppURL);
+var app = request.agent(process.env.TESTAPPURL);
 
-describe('API Gateway Tests:' + testAppURL, function testGateway() {
+describe('API Gateway Tests:', function testGateway() {
    
     describe('Browse integration test', function testBrowse() {
         it('Should be able to get the list of stickers', function browse(done) {
