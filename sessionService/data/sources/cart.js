@@ -12,6 +12,9 @@ exports.getCartAsync = userId => {
     var password = process.env.REDIS_PASSWORD;
     console.log("password: " + password);
 
+    console.log("connected: " + redisClient.connected);
+    console.log(redisClient.server_info.redis_version);
+
     return new Promise((resolve, reject) => {
         redisClient.smembers([cartKey(userId)], (error, items) => {
             if (error) {
