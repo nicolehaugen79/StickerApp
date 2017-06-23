@@ -8,6 +8,10 @@ const redisClient = require('./redisClient');
 const cartKey = userId => `${userId}:cart`;
 
 exports.getCartAsync = userId => {
+
+    var password = process.env.REDIS_PASSWORD;
+    console.log("password: " + password);
+
     return new Promise((resolve, reject) => {
         redisClient.smembers([cartKey(userId)], (error, items) => {
             if (error) {

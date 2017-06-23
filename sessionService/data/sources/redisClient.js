@@ -11,6 +11,8 @@ const options = {
             return 2000;
         }
 
+        console.log("REDIS Password: " + password);
+
         throw 'unable to connect to redis';
     }
 };
