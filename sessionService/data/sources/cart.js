@@ -11,8 +11,10 @@ exports.getCartAsync = userId => {
     return new Promise((resolve, reject) => {
         redisClient.smembers([cartKey(userId)], (error, items) => {
             if (error) {
+                console.log("redis failed" + error);
                 reject(error);
             } else {
+                console.log("redis passed");
                 resolve(items);
             }
         });
