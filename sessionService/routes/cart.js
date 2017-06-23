@@ -6,6 +6,7 @@ const router = require('express').Router();
 
 // send the db record corresponding to each item id in the cart
 async function sendItems(userId, res) {
+    console.error("sendItems called");
     const cartItemIds = await dataAccess.getCartAsync(userId);
     if (cartItemIds.length < 1) {
         res.send({ items: [] });
@@ -21,6 +22,7 @@ async function sendItems(userId, res) {
 }
 
 router.get('/', async (req, res) => {
+    console.error("also called");
     try {
         await sendItems(req.userId, res);
     } catch (error) {

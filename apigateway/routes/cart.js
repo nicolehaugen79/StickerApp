@@ -40,6 +40,7 @@ router.use((req, res, next) => {
 
 router.get('/api/items', function getCart(req, res) {
 
+    console.error("called nicole");
     request.get(CART_URL, {
         headers: { stickerUserId: req.user.id },
         json: true
