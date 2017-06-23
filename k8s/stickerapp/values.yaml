@@ -16,6 +16,10 @@ dockercfg: ""
 # kafkaBroker is the DNS name of a kafka broker with port, e.g. "kafka:9092"
 kafkaBroker: ""
 
+# useIngress indicates whether this deployment should use the cluster's ingress controller
+# For example, deplying a test environment would specify false since it shouldn't be exposed publicly
+useIngress: "true"
+
 # zookeeperConnect is the DNS name of a zookeeper instance with port, e.g. "zookeeper:2181"
 zookeeperConnect: ""
 
