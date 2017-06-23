@@ -1,4 +1,4 @@
-{{- if .Values.useIngress }}
+{{- if .Values.useIngress -}}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
