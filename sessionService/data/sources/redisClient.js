@@ -11,8 +11,6 @@ const options = {
             return 2000;
         }
 
-        console.log("REDIS Password: " + password);
-
         throw 'unable to connect to redis';
     }
 };
@@ -23,6 +21,10 @@ if (process.env.REDIS_TLS_SERVERNAME) {
 
 const redisClient = require('redis').createClient(options);
 redisClient.on('error', err => {
+    console.log("host: " + options.host);
+    console.log("port: " + options.port);
+    console.log("pwd: " + options.password);
+    console.log("retry_strategy: " + options.retry_strategy);
     // swallow errors to allow retries as specified in the retry_strategy above
     console.log(`redis client error: ${err}`);
 });
