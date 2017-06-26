@@ -35,6 +35,7 @@ describe('API Gateway Tests:' + testAppURL, function testGateway() {
             .expect('Content-Type', /json/)
             .expect(200)
             .then(function addItem(res) {
+                console.log("item added");
                 res.body.items.should.have.lengthOf(0);
               
                 //Add an item to the cart
@@ -45,6 +46,7 @@ describe('API Gateway Tests:' + testAppURL, function testGateway() {
                     .expect('Content-Type', /json/);
             })
             .then (function removeItem(res) {
+                console.log("item removed");
                 res.body.items.should.have.lengthOf(1);
 
             //Remove item from the cart
