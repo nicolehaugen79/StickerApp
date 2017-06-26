@@ -58,5 +58,6 @@ mysql:
     enabled: false
 
 redis:
+  redisPassword: "password"
   persistence:
     enabled: false
