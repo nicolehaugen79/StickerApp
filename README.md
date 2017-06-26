@@ -160,12 +160,12 @@ The steps in this section describe how to use Jenkins to setup a CI pipeline for
 5. If the integration tests pass, a production environment is deployed
 
 A few additional points to note:
-* If the app has never been installed, the script will perform a clean install
-* If the app has been installed before, the script will perform an upgrade of the app
+* If the app has never been installed, the pipeline will perform a clean install
+* If the app has been installed before, the pipeline perform an upgrade of the app
 * The pipeline can be triggered to run with each change that is pushed to the GitHub repo (optionally, the pipeline may be manually triggered to make the pipeline easier to run)
 
 #### Prerequisites
-Ensure that these resources have been created (if they haven't already been created):
+Ensure that these resources have been created (if they haven't already):
 
 * A private Docker registry. Follow the Azure Container Registry [getting started guide](
   https://docs.microsoft.com/en-us/azure/container-registry/container-registry-get-started-portal)
@@ -175,7 +175,7 @@ Ensure that these resources have been created (if they haven't already been crea
   https://docs.microsoft.com/en-us/azure/container-service/container-service-kubernetes-walkthrough)
   to create one.
 
-* Deploy an ingress controller to your cluster (if your cluster doesn't have one already):
+* Deploy an ingress controller to your cluster:
   ```console
   $ helm install -f nginx-ingress-values.yaml --namespace kube-system stable/nginx-ingress
   ```
@@ -188,17 +188,17 @@ Ensure that these resources have been created (if they haven't already been crea
   $ helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
   $ helm install -n kafka --set Replicas=1 --set zookeeper.Servers=1 --set zookeeper.Storage="1Gi" incubator/kafka
   ```
-* Create an Azure VM with Jenkins installed (these instructions assume that the Jenkins server will be installed outside of the Kubernetes cluster).  To create one, follow the [quick start] (https://docs.microsoft.com/en-us/azure/jenkins/install-jenkins-solution-template).
+* Create an Azure VM with Jenkins installed (these instructions assume that the Jenkins server will be installed outside of the Kubernetes cluster).  To create a Jenkins VM, follow the [quick start](https://docs.microsoft.com/en-us/azure/jenkins/install-jenkins-solution-template).
 
 #### Jenkins VM setup
 Once you have the Jenkins VM setup, log into the Jenkins web portal and perform the following configuration:
 
 1. Install required plug-ins if they are not already installed.
-* NodeJS (configure this to install both npm and mocha; go to Jenkins->Global Tool Configuration under the NodeJS installations section)
+* NodeJS (configure this to install both npm and Mocha; go to Jenkins->Global Tool Configuration under the NodeJS installations section)
 * GitHub (should be installed by default)
 
-2. Add credentials required by the pipeline script; ensure that you specify the IDs outlined below since.
-Go to Credentials->System, create the following credentials:
+2. Add credentials required by the pipeline script.
+Go to Credentials->System, create the following credentials using the IDs outlined below:
 * Kind: Username with password, ID: AAD 
   - Stores the AAD client and secret needed by the Sticker App to authenticate users of the app.
 * Kind: Username with password, ID: DOCKER
@@ -207,8 +207,8 @@ Go to Credentials->System, create the following credentials:
   - Stores the Docker secret that is needed by Kunernetes to deploy images from the registry.
 
 3. Create the pipeline and add the script.
-Under New Item, enter a name and choose to create Pipeline.  After the below settings are configured, save the Pipeline changes.
-In the pipeline's configuration, make the following changes:
+To do this, under New Item, enter a name and choose to create Pipeline.
+In the pipeline's configuration, save the following changes:
 * In the General section, check the GitHub project and add the url to the Sticker App repo.
 * In the Build Triggers section, check the GitHub hook trigger for GITScm polling.
 * In the Pipeline section, add the jenkins-script\ci-pipeline.groovy script located within Sticker App repo.  You can either copy and paste the script into Jenkins or configure to load the script from SCM.  
@@ -239,15 +239,15 @@ The auth service is implemented using Passport and Passport-Azure-AD npm package
 
 To configure AAD, follow these steps - this is required in order to log in\log out of the app and to complete a sticker order:
 
-1. Get an Azure AD B2C tenant: https://docs.microsoft.com/en-us/azure/active-directory-b2c/active-directory-b2c-get-started
+1. [Get an Azure AD B2C tenant](https://docs.microsoft.com/en-us/azure/active-directory-b2c/active-directory-b2c-get-started)
 
-2. Register the app: https://docs.microsoft.com/en-us/azure/active-directory-b2c/active-directory-b2c-app-registration
+2. [Register the app](https://docs.microsoft.com/en-us/azure/active-directory-b2c/active-directory-b2c-app-registration)
 * Note that the Reply URL will need to include the external IP address of the cluster's ingress controller, e.g. "https://<ingress controller IP>/users/auth/return"
 
-3. Create Sign Up\Sign In policies: https://docs.microsoft.com/en-us/azure/active-directory-b2c/active-directory-b2c-reference-policies#create-a-sign-up-policy
+3. [Create Sign Up\Sign In policies](https://docs.microsoft.com/en-us/azure/active-directory-b2c/active-directory-b2c-reference-policies#create-a-sign-up-policy)
 
-In addition, refer to the 'Create an application' and 'Create your policies' sections that are included here: https://docs.microsoft.com/en-us/azure/active-directory-b2c/active-directory-b2c-devquickstarts-web-node
+In addition, refer to the 'Create an application' and 'Create your policies' sections that are included [here](https://docs.microsoft.com/en-us/azure/active-directory-b2c/active-directory-b2c-devquickstarts-web-node)
 
-4. Configure Facebook with your AAD tenant: https://docs.microsoft.com/en-us/azure/active-directory-b2c/active-directory-b2c-setup-fb-app
+4. [Configure Facebook with your AAD tenant](https://docs.microsoft.com/en-us/azure/active-directory-b2c/active-directory-b2c-setup-fb-app)
 
 Note that there are steps missing from this - the signup/login policies need to be added the new Facebook provider too.
