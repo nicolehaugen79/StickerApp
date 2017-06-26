@@ -1,6 +1,6 @@
 # Sticker E-Commerce Demo App
 
-**Running locally:**
+## Running Locally
 
 ```console
 $ docker-compose -f docker-compose.dev.yml up -d
@@ -156,8 +156,9 @@ The steps in this section describe how to use Jenkins to setup a CI pipeline for
 1. Docker images are created for each of the app's microservices
 2. The Docker images are pushed to the Azure Container Registry
 3. The app's microservices are deployed using the images stored in the Azure Container Registry via Kubernetes\Helm
-  * A test environment is deployed and mocha integration tests run to verify the app
-  * If the integration tests pass, a production environment is deployed
+4. A test environment is deployed and mocha integration tests run to verify the app
+5. If the integration tests pass, a production environment is deployed
+
 A few additional points to note:
 * If the app has never been installed, the script will perform a clean install
 * If the app has been installed before, the script will perform an upgrade of the app
