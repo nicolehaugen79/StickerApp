@@ -2,7 +2,7 @@ require('should');
 require('supertest-as-promised');
 var request = require('supertest');
 var testAppURL = process.env.TEST_APP_URL;
-//var app = request.agent('http://localhost:8001/api/v1/proxy/namespaces/default/services/rousing-alpaca-apigateway:80');
+//var app = request.agent('http://localhost:8001/api/v1/proxy/namespaces/default/services/test-sticker-ingress4:80');
 var app = request.agent(testAppURL);
 
 describe('API Gateway Tests:' + testAppURL, function testGateway() {
@@ -23,7 +23,7 @@ describe('API Gateway Tests:' + testAppURL, function testGateway() {
     describe('Cart integration test', function testCart() {
         it ('Should be able to add/remove to cart', function addRemoveCartItems() {
 
-            const userId = '123456';
+            const userId = '1234567';
             const item = {item:{_id:'59249ba8d4a29f19002c1852', id:'11',
                     tags:['Service'], name:'MailChimp', description:'MailChimp provides email marketing services', author:'MailChimp',
                     size:{width:'2in', height:'2in'}, image:'/img/logo/mailchimp.png'}, token:userId};
