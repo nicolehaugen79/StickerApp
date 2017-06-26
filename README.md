@@ -228,7 +228,7 @@ There are 2 ways to trigger the pipeline script to run.
   specify the url to your Jenkins VM followed by "/github-webhook".  For example: http://<IP>:8080/github-webhook/.  Ensure that the Active checkbox is checked.
 * Or, within Jenkins, you can click the Build Now link.
 
-#### AAD Setup
+## AAD Setup
 The app's authentication service is implemented as part of the API Gateway and supports both basic email and facebook authentication by using Azure AAD B2C.  The API Gateway acts as the primary entry point into th eserver by providing a wrapper over all calls to the microservices' endpoints.  The advantage of this approach is:
 
 * The gateway is responsible for ensuring that the user is authenticated before it calls into each microservice; this way, none of the microservices themselves need to worry about        authenticating the user.
