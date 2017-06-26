@@ -150,3 +150,103 @@ honest-deer-apigateway   2         2         2            2           10m
 #### Further reading
 * [Kubernetes Basics](https://kubernetes.io/docs/tutorials/kubernetes-basics/)
 * [Using Helm](https://docs.helm.sh/using-helm/#helm-usage)
+
+## Deploying to Kubernetes with Jenkins CI Pipeline
+The steps in this section describe how to use Jenkins to setup a CI pipeline for the Sticker App.  Specifically, each time that the pipeline runs, the following steps will be performed:
+1. Docker images are created for each of the app's microservices
+2. The Docker images are pushed to the Azure Container Registry
+3. The app's microservices are deployed using the images stored in the Azure Container Registry via Kubernetes\Helm
+  * A test environment is deployed and mocha integration tests run to verify the app
+  * If the integration tests pass, a production environment is deployed
+A few additional points to note:
+* If the app has never been installed, the script will perform a clean install
+* If the app has been installed before, the script will perform an upgrade of the app
+* The pipeline can be triggered to run with each change that is pushed to the GitHub repo (optionally, the pipeline may be manually triggered to make the pipeline easier to run)
+
+#### Prerequisites
+Ensure that these resources have been created (if they haven't already been created):
+
+* A private Docker registry. Follow the Azure Container Registry [getting started guide](
+  https://docs.microsoft.com/en-us/azure/container-registry/container-registry-get-started-portal)
+  to create one.
+
+* A Kubernetes cluster. Follow the Azure Container Service [walkthrough](
+  https://docs.microsoft.com/en-us/azure/container-service/container-service-kubernetes-walkthrough)
+  to create one.
+
+* Deploy an ingress controller to your cluster (if your cluster doesn't have one already):
+  ```console
+  $ helm install -f nginx-ingress-values.yaml --namespace kube-system stable/nginx-ingress
+  ```
+  * `nginx-ingress-values.yaml`, in this repository's `k8s` directory, contains
+ settings which override the `nginx-ingress` chart's defaults to disable SSL
+ redirecting and use a more recent controller image
+
+* The app requires a Kafka cluster. You can deploy a small one with Helm:
+  ```console
+  $ helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
+  $ helm install -n kafka --set Replicas=1 --set zookeeper.Servers=1 --set zookeeper.Storage="1Gi" incubator/kafka
+  ```
+* Create an Azure VM with Jenkins installed (these instructions assume that the Jenkins server will be installed outside of the Kubernetes cluster).  To create one, follow the [quick start] (https://docs.microsoft.com/en-us/azure/jenkins/install-jenkins-solution-template).
+
+#### Jenkins VM setup
+Once you have the Jenkins VM setup, log into the Jenkins web portal and perform the following configuration:
+
+1. Install required plug-ins if they are not already installed.
+* NodeJS (configure this to install both npm and mocha; go to Jenkins->Global Tool Configuration under the NodeJS installations section)
+* GitHub (should be installed by default)
+
+2. Add credentials required by the pipeline script; ensure that you specify the IDs outlined below since.
+Go to Credentials->System, create the following credentials:
+* Kind: Username with password, ID: AAD 
+  - Stores the AAD client and secret needed by the Sticker App to authenticate users of the app.
+* Kind: Username with password, ID: DOCKER
+  - Stores the Azure Container Registry user id and secret needed to push images to the registry.
+* Kind: Secret text, ID: ACR
+  - Stores the Docker secret that is needed by Kunernetes to deploy images from the registry.
+
+3. Create the pipeline and add the script.
+Under New Item, enter a name and choose to create Pipeline.  After the below settings are configured, save the Pipeline changes.
+In the pipeline's configuration, make the following changes:
+* In the General section, check the GitHub project and add the url to the Sticker App repo.
+* In the Build Triggers section, check the GitHub hook trigger for GITScm polling.
+* In the Pipeline section, add the jenkins-script\ci-pipeline.groovy script located within Sticker App repo.  You can either copy and paste the script into Jenkins or configure to load the script from SCM.  
+* Modify the env vars used within the script:
+  - ACR_NAME (Azure container docker registry where the images are pushed\pulled from, e.g. <containername>.azurecr.io)
+  - KAFKA_BROKER (DNS name of the kafka broker with port, e.g. "kafka:9092")
+  - ZK_CONNECT (DNS name of a zookeeper instance with port, e.g. "zookeepr:2181")
+  - INGRESS_IP (IP address of nginx ingress controller)
+  - PROD_RELEASE (Release name for the production version of the app)
+  - TEST_RELEASE (Release name for the test version of the app)
+  - AAD_TENANT (Name of the AAD tenant used for the app's B2C authentication, e.g. <tenantname>.onmicrosoft.com)
+
+4. Run the pipeline script.
+There are 2 ways to trigger the pipeline script to run.
+* You can push a change to GitHub.  Note that this requires you to add a webhook to Jenkins within GitHub's settings.
+  In GitHub, under the repo's settings, select Integrations & services.  Choose to Add a service and select Jenkins (GitHub plugin).  In the Jenkins hook url field,
+  specify the url to your Jenkins VM followed by "/github-webhook".  For example: http://<IP>:8080/github-webhook/.  Ensure that the Active checkbox is checked.
+* Or, within Jenkins, you can click the Build Now link.
+
+#### AAD Setup
+The app's authentication service is implemented as part of the API Gateway and supports both basic email and facebook authentication by using Azure AAD B2C.  The API Gateway acts as the primary entry point into th eserver by providing a wrapper over all calls to the microservices' endpoints.  The advantage of this approach is:
+
+* The gateway is responsible for ensuring that the user is authenticated before it calls into each microservice; this way, none of the microservices themselves need to worry about        authenticating the user.
+
+* The microservices' endpoints are not exposed publicly; only the API Gateway is able to access these endpoints which helps make the server more secure.
+
+The auth service is implemented using Passport and Passport-Azure-AD npm packages.
+
+To configure AAD, follow these steps - this is required in order to log in\log out of the app and to complete a sticker order:
+
+1. Get an Azure AD B2C tenant: https://docs.microsoft.com/en-us/azure/active-directory-b2c/active-directory-b2c-get-started
+
+2. Register the app: https://docs.microsoft.com/en-us/azure/active-directory-b2c/active-directory-b2c-app-registration
+* Note that the Reply URL will need to include the external IP address of the cluster's ingress controller, e.g. "https://<ingress controller IP>/users/auth/return"
+
+3. Create Sign Up\Sign In policies: https://docs.microsoft.com/en-us/azure/active-directory-b2c/active-directory-b2c-reference-policies#create-a-sign-up-policy
+
+In addition, refer to the 'Create an application' and 'Create your policies' sections that are included here: https://docs.microsoft.com/en-us/azure/active-directory-b2c/active-directory-b2c-devquickstarts-web-node
+
+4. Configure Facebook with your AAD tenant: https://docs.microsoft.com/en-us/azure/active-directory-b2c/active-directory-b2c-setup-fb-app
+
+Note that there are steps missing from this - the signup/login policies need to be added the new Facebook provider too.

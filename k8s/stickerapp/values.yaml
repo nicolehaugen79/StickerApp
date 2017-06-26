@@ -50,12 +50,14 @@ imagePullPolicy: "IfNotPresent"
 mongodb:
   persistence:
     enabled: false
+  cpu: "100m"
 
 mysql:
   mysqlAllowEmptyPassword: true
   mysqlDatabase: "StickerDemoApp"
   persistence:
     enabled: false
+  cpu: "100m"
 
 redis:
   redisPassword: "password"
